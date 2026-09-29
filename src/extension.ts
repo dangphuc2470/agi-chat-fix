@@ -15,12 +15,6 @@ const PATCHED_PSR = `${PATCH_MARKER}PSr=class extends oe{constructor(e,i){super(
 const ORIGINAL_CM = 'onContextMenu(e,i){if(i.defaultPrevented)return;const n=i.target;if(!Yot(n)&&!_an(n))return;Ds.stop(i,!0);const r=new Ou(e,i);';
 const PATCHED_CM = 'onContextMenu(e,i){if(i.defaultPrevented)return;const n=i.target;if(!Yot(n)&&!_an(n)&&!bI().getSelection()?.toString()&&!n?.closest?.(".antigravity-agent-side-panel"))return;Ds.stop(i,!0);const r=new Ou(e,i);';
 
-// Target 3: Silence integrity check notification so "installation appears to be corrupt" is permanently disabled
-const ORIGINAL_INTEGRITY = 'commit||this._showNotification()}async _isPure(){const e=this.productService.checksums||{};';
-const PATCHED_INTEGRITY = 'commit||this._showNotification()}async _isPure(){return{isPure:!0,proof:[]}}async _unused_isPure(){const e=this.productService.checksums||{};';
-
-const ORIGINAL_SHOW_NOTIF = '_showNotification(){const e=this.productService.checksumFailMoreInfoUrl';
-const PATCHED_SHOW_NOTIF = '_showNotification(){return;const e=this.productService.checksumFailMoreInfoUrl';
 
 function getWorkbenchPath(appRoot: string): string {
     return path.join(appRoot, 'out', 'vs', 'workbench', 'workbench.desktop.main.js');
@@ -105,12 +99,6 @@ async function applyFix(silent: boolean = false): Promise<boolean> {
     if (newContent.includes(ORIGINAL_CM)) {
         newContent = newContent.replace(ORIGINAL_CM, PATCHED_CM);
     }
-    if (newContent.includes(ORIGINAL_INTEGRITY)) {
-        newContent = newContent.replace(ORIGINAL_INTEGRITY, PATCHED_INTEGRITY);
-    }
-    if (newContent.includes(ORIGINAL_SHOW_NOTIF)) {
-        newContent = newContent.replace(ORIGINAL_SHOW_NOTIF, PATCHED_SHOW_NOTIF);
-    }
 
     try {
         fs.writeFileSync(wbPath, newContent, 'utf8');
@@ -178,8 +166,6 @@ async function removeFix(): Promise<boolean> {
 
     let restored = content.replace(PATCHED_PSR, ORIGINAL_PSR);
     restored = restored.replace(PATCHED_CM, ORIGINAL_CM);
-    restored = restored.replace(PATCHED_INTEGRITY, ORIGINAL_INTEGRITY);
-    restored = restored.replace(PATCHED_SHOW_NOTIF, ORIGINAL_SHOW_NOTIF);
 
     try {
         fs.writeFileSync(wbPath, restored, 'utf8');
