@@ -13,7 +13,8 @@ const PATCHED_PSR = `${PATCH_MARKER}PSr=class extends oe{constructor(e,i){super(
 
 // Target 2: Context menu enablement for chat panel text selection
 const ORIGINAL_CM = 'onContextMenu(e,i){if(i.defaultPrevented)return;const n=i.target;if(!Yot(n)&&!_an(n))return;Ds.stop(i,!0);const r=new Ou(e,i);';
-const PATCHED_CM = 'onContextMenu(e,i){if(i.defaultPrevented)return;const n=i.target;if(!Yot(n)&&!_an(n)&&!bI().getSelection()?.toString()&&!n?.closest?.(".antigravity-agent-side-panel"))return;Ds.stop(i,!0);const r=new Ou(e,i);';
+const OLD_PATCHED_CM = 'onContextMenu(e,i){if(i.defaultPrevented)return;const n=i.target;if(!Yot(n)&&!_an(n)&&!bI().getSelection()?.toString()&&!n?.closest?.(".antigravity-agent-side-panel"))return;Ds.stop(i,!0);const r=new Ou(e,i);';
+const PATCHED_CM = 'onContextMenu(e,i){if(i.defaultPrevented)return;const n=i.target;if(!Yot(n)&&!_an(n)&&!(n?.closest?.(".antigravity-agent-side-panel")&&bI().getSelection()?.toString()))return;Ds.stop(i,!0);const r=new Ou(e,i);';
 
 
 function getWorkbenchPath(appRoot: string): string {
@@ -68,12 +69,32 @@ async function applyFix(silent: boolean = false): Promise<boolean> {
     }
 
     if (content.includes(PATCH_MARKER)) {
+        let updated = false;
+        if (content.includes(OLD_PATCHED_CM)) {
+            content = content.replace(OLD_PATCHED_CM, PATCHED_CM);
+            try {
+                fs.writeFileSync(wbPath, content, 'utf8');
+                updated = true;
+            } catch (e) {
+                console.error('Failed to update context menu patch:', e);
+            }
+        }
         // Already patched! Just make sure product.json checksum is in sync
         const curBuf = Buffer.from(content, 'utf8');
         const curHash = computeSha256Base64(curBuf);
         updateChecksumInProductJson(appRoot, 'vs/workbench/workbench.desktop.main.js', curHash);
         if (!silent) {
-            vscode.window.showInformationMessage('AGI Chat Fix: Already applied and checksums verified!');
+            if (updated) {
+                const choice = await vscode.window.showInformationMessage(
+                    'AGI Chat Fix updated to latest version! Reload window to take effect.',
+                    'Reload Window'
+                );
+                if (choice === 'Reload Window') {
+                    await vscode.commands.executeCommand('workbench.action.reloadWindow');
+                }
+            } else {
+                vscode.window.showInformationMessage('AGI Chat Fix: Already applied and checksums verified!');
+            }
         }
         return true;
     }
@@ -96,7 +117,9 @@ async function applyFix(silent: boolean = false): Promise<boolean> {
     }
 
     let newContent = content.replace(ORIGINAL_PSR, PATCHED_PSR);
-    if (newContent.includes(ORIGINAL_CM)) {
+    if (newContent.includes(OLD_PATCHED_CM)) {
+        newContent = newContent.replace(OLD_PATCHED_CM, PATCHED_CM);
+    } else if (newContent.includes(ORIGINAL_CM)) {
         newContent = newContent.replace(ORIGINAL_CM, PATCHED_CM);
     }
 
@@ -166,6 +189,7 @@ async function removeFix(): Promise<boolean> {
 
     let restored = content.replace(PATCHED_PSR, ORIGINAL_PSR);
     restored = restored.replace(PATCHED_CM, ORIGINAL_CM);
+    restored = restored.replace(OLD_PATCHED_CM, ORIGINAL_CM);
 
     try {
         fs.writeFileSync(wbPath, restored, 'utf8');

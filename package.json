@@ -2,7 +2,7 @@
   "name": "agi-chat-fix",
   "displayName": "AGI Chat Fix",
   "description": "Fixes Cmd+C / Cmd+V not working and restores right-click context menu in Antigravity chat panel.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "dangphuc2470",
   "author": {
     "name": "dangphuc2470",
