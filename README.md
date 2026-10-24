@@ -1,59 +1,60 @@
 # AGI Chat Fix
 
-All-in-one fix and enhancement suite for **Antigravity IDE**.
+All-in-one UX enhancement and bug-fix suite for **Antigravity IDE**.
 
 ---
 
-## What This Extension Fixes & Enhances
+## Key UX Fixes & Enhancements
 
-1. **Clipboard & Selection (`Cmd+C` / `Ctrl+C`, `Cmd+V` / `Ctrl+V`)**:
-   - Reliable copying of highlighted text in AI responses, user messages, and code snippets.
-   - Smooth pasting into the chat prompt input from keyboard shortcuts and clipboard history.
+1. **Clipboard & Text Selection**:
+   - Fixes reliable copying (`Ctrl+C` / `Cmd+C`) from AI responses, user messages, and code blocks.
+   - Fixes keyboard pasting (`Ctrl+V` / `Cmd+V`) and system clipboard history directly into the prompt input.
+
 2. **Right-Click Context Menu**:
-   - Restores full context menu (**Cut / Copy / Paste / Select All**) anywhere in the chat panel.
-3. **Windows Workspace Chat History**:
-   - Fixes issue on Windows where recent chat history belonging to the current workspace folder would disappear or intermittently fail to show due to URL encoding differences (`%3A` vs `:`) and drive letter casing (`D:` vs `d:`).
+   - Restores native context menu (**Cut**, **Copy**, **Paste**, **Select All**) across the agent chat panel.
+
+3. **Workspace Chat History (Windows)**:
+   - Resolves missing or intermittent conversation history caused by URI encoding (`%3A` vs `:`) and drive letter case mismatches (`D:` vs `d:`).
+
 4. **Conversation Forking (Branch in New Chat)**:
-   - Unlocks the hidden conversation forking feature across the app.
-   - Adds a Git branch icon (`fork_left`) under **every response** so you can branch off into a new conversation from any checkpoint.
-5. **Full Context Archive & Link**:
-   - When a conversation reaches max context length and the server clears earlier turns, replaces the plain warning with an automatic archive notice plus a direct link to open the full conversation history as a clean Markdown (`.md`) file.
-   - Configures automatic archiving of cleared conversations into `~/.gemini/conversations/`.
+   - Unlocks built-in conversation branching with a `fork_left` icon under every response to explore alternate prompts without losing context.
+
+5. **Full Context Auto-Archive**:
+   - Automatically archives conversations reaching context limits to `~/.gemini/conversations/` and adds a one-click Markdown link in the chat banner.
+
 6. **Multi-Window Notification Focus**:
-   - Fixes issue where clicking a task-completed desktop notification opened the chat inside the currently active window instead of switching focus to the original window that ran the task.
-7. **Auto-Load Cross-Workspace Chat & Zero Popup**:
-   - Eliminates the annoying *"Select where to open the conversation"* dialog when clicking conversations from different workspace folders.
-   - Automatically switches to/opens the target workspace window and auto-loads the selected conversation immediately.
-8. **Auto-Syncs Checksums & Auto-Prompts on IDE Updates**:
-   - Recalculates and updates `product.json` checksums automatically, eliminating the *"Your installation appears to be corrupted"* warning.
-   - When Google updates Antigravity IDE and overwrites files, the extension detects the missing patches on launch and offers a 1-click *"Apply All Fixes & Reload"* button.
+   - Directs task completion notifications to the exact window running the task, instead of opening duplicate chats in whichever window is currently active.
+
+7. **Instant Cross-Workspace Chat Switch**:
+   - Eliminates the modal popup (*"Select where to open the conversation"*). Automatically switches to the target workspace and loads the selected conversation instantly.
+
+8. **Integrity & Auto-Patch Management**:
+   - Synchronizes `product.json` checksums to silence the *"Your installation appears to be corrupted"* warning.
+   - Automatically detects unpatched files after IDE updates and offers a 1-click *"Apply All Fixes & Reload"*.
 
 ---
 
 ## Installation
 
-### Method 1: Install via Antigravity IDE UI (Recommended)
+### Install via Antigravity IDE (VSIX)
 
-1. Download the latest `.vsix` file from [Releases](https://github.com/dangphuc2470/agi-chat-fix/releases).
-2. Open Antigravity IDE.
-3. Open the Extensions view by pressing `Cmd + Shift + X` (macOS) or `Ctrl + Shift + X` (Windows/Linux).
-4. Click the three dots menu (**`...`**) in the top right corner of the Extensions panel.
-5. Select **Install from VSIX...** and choose the downloaded `.vsix` file.
-6. When prompted, reload the window, or press `Cmd + Shift + P` -> **Developer: Reload Window**.
+1. Download the latest `.vsix` from [Releases](https://github.com/dangphuc2470/agi-chat-fix/releases).
+2. Open Extensions (`Ctrl + Shift + X` or `Cmd + Shift + X`).
+3. Click More Actions (**`...`**) in the Extensions panel title bar.
+4. Select **Install from VSIX...** and pick the downloaded package.
+5. Reload window (`Ctrl + Shift + P` -> **Developer: Reload Window**).
 
 ---
 
-## Usage
+## Commands
 
-Once installed, the extension works automatically on startup.
-
-You can also run commands manually by pressing `Cmd + Shift + P` (or `Ctrl + Shift + P`) and typing **`agi`**, **`chat`**, or **`fix`**:
+Access via Command Palette (`Ctrl + Shift + P` / `Cmd + Shift + P`) by searching **`agi`**:
 
 | Command | Description |
 |---|---|
-| `AGI Chat Fix: Apply All Fixes & Sync Checksums` | Applies all patches and syncs checksums |
-| `AGI Chat Fix: Dismiss Corrupted Warning (Sync Checksums)` | Syncs checksums with `product.json` without modifying files |
-| `AGI Chat Fix: Remove All Fixes (Restore Original)` | Restores the original unmodified IDE files and original checksums |
+| `AGI Chat Fix: Apply All Fixes & Sync Checksums` | Applies all patches and synchronizes checksums |
+| `AGI Chat Fix: Dismiss Corrupted Warning (Sync Checksums)` | Synchronizes checksums with `product.json` without modifying code |
+| `AGI Chat Fix: Remove All Fixes (Restore Original)` | Restores unmodified IDE files and original checksums |
 
 ---
 
