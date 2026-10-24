@@ -1,8 +1,8 @@
 {
   "name": "agi-chat-fix",
   "displayName": "AGI Chat Fix",
-  "description": "All-in-one fix & enhancements for Antigravity IDE: clipboard, folder history, conversation forking, full-context archiving, and notification focus.",
-  "version": "1.1.0",
+  "description": "All-in-one fix & enhancements for Antigravity IDE: clipboard, folder history, conversation forking, full-context archiving, notification focus, and auto-load cross-workspace chat.",
+  "version": "1.2.0",
   "publisher": "dangphuc2470",
   "author": {
     "name": "dangphuc2470",

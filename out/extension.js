@@ -76,11 +76,25 @@ const PATCHED_IXU = 'var ixu=({steps:t})=>{if(!txu(t))return null;let _id=wC(),{
 // ==========================================
 const ORIGINAL_NOTIF_PAYLOAD = 'payload:{cascadeId:t,type:"request_action",workspaceUri:void 0}';
 const PATCHED_NOTIF_PAYLOAD = 'payload:{cascadeId:t,type:"request_action",workspaceUri:r?.workspaces?.[0]?.workspaceFolderAbsoluteUri}';
+// ==========================================
+// Module 6: Auto-Open Workspace & Auto-Load Chat
+// ==========================================
+const ORIGINAL_SMART_FOCUS_TARGET = 'sn.registerCommand("workbench.action.isAntigravitySnoozed",n=>i.isSnoozed())';
+const PATCHED_SMART_FOCUS_TARGET = 'sn.registerCommand("workbench.action.isAntigravitySnoozed",n=>i.isSnoozed()),sn.registerCommand("workbench.action.smartFocusConversation",(t,e)=>{try{t.get(AJ).togglePanelTab?.("conversation",e)}catch{}})';
+const ORIGINAL_QUICKPICK = 'l.commands.registerCommand("antigravity.openConversationWorkspaceQuickPick",async e=>{const t=e.workspaceUris,n=e.cascadeId;if(0===t.length)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});const o=[{label:"Open in current window",description:"Continue conversation in the current workspace"},...t.map(e=>({label:"Open in workspace: ",description:l.Uri.parse(e).fsPath}))],i=await l.window.showQuickPick(o,{placeHolder:"Select where to open the conversation",ignoreFocusOut:!1});if(!i||void 0===i.description)return(0,c.v)(d.Lm,{openInCurrentWindow:!1});if("Open in current window"===i.label)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});const r=i.description;try{const e=l.Uri.file(r);return await q.F.getInstance().setWorkspaceCascadeMap(e.toString(),n),await l.commands.executeCommand("vscode.openFolder",e,{forceNewWindow:!0}),(0,c.v)(d.Lm,{openInCurrentWindow:!1})}catch(e){return console.error("Error opening workspace:",e),l.window.showErrorMessage("Failed to open workspace"),(0,c.v)(d.Lm,{openInCurrentWindow:!1})}})';
+const PATCHED_QUICKPICK = 'l.commands.registerCommand("antigravity.openConversationWorkspaceQuickPick",async e=>{const t=e.workspaceUris,n=e.cascadeId;if(!t||0===t.length)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});try{const targetUri=l.Uri.parse(t[0]);await q.F.getInstance().setWorkspaceCascadeMap(targetUri.toString(),n);await l.commands.executeCommand("vscode.openFolder",targetUri,{forceNewWindow:!0});return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}catch(err){console.error("Error opening workspace:",err);return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}})';
+const ORIGINAL_EXT_STORAGE = 'getCascadeIdForCurrentWorkspace(){const e=this.getStoredValue(i.b.WORKSPACE_CASCADE_MAP),t=o.workspace.workspaceFolders?.[0]?.uri.toString();let n="";return void 0!==t&&void 0!==e&&(n=e[t]),n&&void 0!==t&&this.setWorkspaceCascadeMap(t,void 0),n}';
+const PATCHED_EXT_STORAGE = 'getCascadeIdForCurrentWorkspace(){const e=this.getStoredValue(i.b.WORKSPACE_CASCADE_MAP),t=o.workspace.workspaceFolders?.[0]?.uri.toString();let n="";if(void 0!==t&&void 0!==e){let _norm=u=>{try{return decodeURIComponent(u||"").toLowerCase().replace(/\\\\/g,"/").replace(/\\/+$/,"")}catch{return String(u||"").toLowerCase().replace(/\\\\/g,"/").replace(/\\/+$/,"")}};let _t=_norm(t);for(let[k,v]of Object.entries(e)){if(_norm(k)===_t){n=v;this.setWorkspaceCascadeMap(k,void 0);break}}}return n}';
+const ORIGINAL_EXT_ACT = 'q.F.initialize(e),ce.end()';
+const PATCHED_EXT_ACT = 'q.F.initialize(e),ce.end(),(()=>{try{const _pId=q.F.getInstance().getCascadeIdForCurrentWorkspace();if(_pId){const _f=()=>l.commands.executeCommand("workbench.action.smartFocusConversation",_pId);setTimeout(_f,800);setTimeout(_f,1800);setTimeout(_f,3000)}}catch(_e){}})()';
 function getWorkbenchPath(appRoot) {
     return path.join(appRoot, 'out', 'vs', 'workbench', 'workbench.desktop.main.js');
 }
 function getMainJsPath(appRoot) {
     return path.join(appRoot, 'out', 'main.js');
+}
+function getAntigravityExtensionPath(appRoot) {
+    return path.join(appRoot, 'extensions', 'antigravity', 'dist', 'extension.js');
 }
 function getProductJsonPath(appRoot) {
     return path.join(appRoot, 'product.json');
@@ -119,137 +133,153 @@ function setupAutoArchiveHook() {
         fs.mkdirSync(convDir, { recursive: true });
         const scriptContent = `import json
 import os
-import glob
-import sqlite3
 import sys
 
-GEMINI_DIR = r'${geminiDir.replace(/\\/g, '/')}'
-CONV_DIR = os.path.join(GEMINI_DIR, 'conversations')
-BRAIN_DIR = os.path.join(GEMINI_DIR, 'antigravity-ide', 'brain')
-DB_DIR = os.path.join(GEMINI_DIR, 'antigravity-ide', 'conversations')
+def main():
+    try:
+        raw_input = sys.stdin.read()
+        if not raw_input.strip():
+            return
+        data = json.loads(raw_input)
+    except Exception:
+        return
 
-os.makedirs(CONV_DIR, exist_ok=True)
+    conv_id = data.get("conversation_id")
+    if not conv_id:
+        return
 
-def export_conversation(cid):
-    transcript_path = os.path.join(BRAIN_DIR, cid, '.system_generated', 'logs', 'transcript.jsonl')
-    if not os.path.exists(transcript_path):
-        return None
-    
-    out_md = os.path.join(CONV_DIR, f"{cid}.md")
-    turns = []
-    current_turn = None
-    
-    with open(transcript_path, 'r', encoding='utf-8', errors='ignore') as f:
-        for line in f:
-            try:
-                step = json.loads(line)
-            except Exception:
-                continue
-            
-            step_type = step.get('type')
-            content = step.get('content') or ''
-            step_idx = step.get('step_index', 0)
-            tool_calls = step.get('tool_calls', [])
-            
-            if step_type == 'USER_INPUT':
-                if current_turn is not None:
-                    turns.append(current_turn)
-                current_turn = {'step': step_idx, 'user': content.strip(), 'assistant': [], 'tools': []}
-            elif current_turn is not None:
-                if step_type == 'PLANNER_RESPONSE':
-                    if content.strip():
-                        current_turn['assistant'].append(content.strip())
-                    for tc in tool_calls:
-                        t_name = tc.get('tool_name', 'tool')
-                        t_desc = tc.get('tool_summary') or tc.get('tool_action') or t_name
-                        current_turn['tools'].append(f"Step {step_idx}: **{t_name}** - {t_desc}")
-    
-    if current_turn is not None:
-        turns.append(current_turn)
-        
-    if not turns:
-        return None
-        
-    with open(out_md, 'w', encoding='utf-8') as out:
-        out.write(f"# Lịch sử hội thoại: {cid}\\n\\n")
-        out.write(f"- **Conversation ID:** \`{cid}\`\\n")
-        out.write(f"- **Số lượt hỏi đáp:** {len(turns)}\\n")
-        out.write(f"- **Tự động lưu trữ lúc:** Full context / CLEARED\\n\\n---\\n\\n")
-        
-        for i, turn in enumerate(turns, 1):
-            out.write(f"## Lượt {i} (Step {turn['step']})\\n\\n")
-            out.write("### User\\n\\n" + turn['user'] + "\\n\\n")
-            if turn['assistant']:
-                out.write("### Assistant\\n\\n" + "\\n\\n".join(turn['assistant']) + "\\n\\n")
-            else:
-                out.write("### Assistant\\n\\n*(Không có phản hồi văn bản)*\\n\\n")
-            if turn['tools']:
-                out.write(f"<details><summary>Thao tác công cụ ({len(turn['tools'])})</summary>\\n\\n")
-                for t in turn['tools']:
-                    out.write(f"- {t}\\n")
-                out.write("\\n</details>\\n\\n")
-            out.write("---\\n\\n")
-    return out_md
+    user_home = os.path.expanduser("~")
+    gemini_dir = os.path.join(user_home, ".gemini")
+    logs_dir = os.path.join(gemini_dir, "antigravity-ide", "brain", conv_id, ".system_generated", "logs")
+    transcript_file = os.path.join(logs_dir, "transcript_full.jsonl")
 
-def scan_all_cleared():
-    dbs = glob.glob(os.path.join(DB_DIR, '*.db'))
-    for db_path in dbs:
-        cid = os.path.splitext(os.path.basename(db_path))[0]
-        try:
-            conn = sqlite3.connect(db_path)
-            cur = conn.cursor()
-            cur.execute("SELECT count(*) FROM steps WHERE status = 5")
-            cleared_cnt = cur.fetchone()[0]
-            if cleared_cnt > 0:
-                export_conversation(cid)
-        except Exception:
-            pass
+    if not os.path.exists(transcript_file):
+        transcript_file = os.path.join(logs_dir, "transcript.jsonl")
+        if not os.path.exists(transcript_file):
+            return
 
-if __name__ == '__main__':
-    cid_from_input = None
-    if not sys.stdin.isatty():
-        try:
-            raw = sys.stdin.read().strip()
-            if raw:
-                hook_data = json.loads(raw)
-                cid_from_input = hook_data.get('conversationId')
-        except Exception:
-            pass
-    if cid_from_input:
-        export_conversation(cid_from_input)
-    else:
-        scan_all_cleared()
-    print("{}")
+    has_cleared_prefix = False
+    messages = []
+
+    try:
+        with open(transcript_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    text_content = json.dumps(entry, ensure_ascii=False)
+                    if "The server cleared a prefix of the conversation as it grew too large" in text_content:
+                        has_cleared_prefix = True
+
+                    step_type = entry.get("type")
+                    content = entry.get("content", "")
+                    if step_type == "USER_INPUT":
+                        messages.append(f"### User:\\n\\n{content}\\n")
+                    elif step_type == "PLANNER_RESPONSE":
+                        messages.append(f"### Assistant:\\n\\n{content}\\n")
+                except Exception:
+                    continue
+    except Exception:
+        return
+
+    if not has_cleared_prefix:
+        return
+
+    out_dir = os.path.join(gemini_dir, "conversations")
+    os.makedirs(out_dir, exist_ok=True)
+    out_file = os.path.join(out_dir, f"{conv_id}.md")
+
+    try:
+        with open(out_file, "w", encoding="utf-8") as out:
+            out.write(f"# Conversation Archive: {conv_id}\\n\\n")
+            out.write("> [!NOTE]\\n")
+            out.write("> This conversation prefix was cleared by the server as it grew too large.\\n")
+            out.write("> Full transcript preserved automatically by Antigravity Hook.\\n\\n---\\n\\n")
+            out.write("\\n---\\n\\n".join(messages))
+    except Exception:
+        pass
+
+if __name__ == "__main__":
+    main()
 `;
-        const scriptFile = path.join(scriptsDir, 'archive_cleared_conversations.py');
-        fs.writeFileSync(scriptFile, scriptContent, 'utf8');
-        const hooksFile = path.join(configDir, 'hooks.json');
-        let hooksConfig = {};
-        if (fs.existsSync(hooksFile)) {
+        const scriptPath = path.join(scriptsDir, 'archive_cleared_conversations.py');
+        fs.writeFileSync(scriptPath, scriptContent, 'utf8');
+        const hooksPath = path.join(configDir, 'hooks.json');
+        let hooksJson = { hooks: {} };
+        if (fs.existsSync(hooksPath)) {
             try {
-                hooksConfig = JSON.parse(fs.readFileSync(hooksFile, 'utf8'));
+                hooksJson = JSON.parse(fs.readFileSync(hooksPath, 'utf8'));
+                if (!hooksJson.hooks)
+                    hooksJson.hooks = {};
             }
-            catch { }
+            catch {
+                hooksJson = { hooks: {} };
+            }
         }
-        hooksConfig["auto-archive-full-context"] = {
-            "Stop": [
-                {
-                    "type": "command",
-                    "command": `python "${scriptFile.replace(/\\/g, '/')}"`,
-                    "timeout": 30
-                }
-            ]
-        };
-        fs.writeFileSync(hooksFile, JSON.stringify(hooksConfig, null, 2), 'utf8');
+        const pythonCmd = 'python ~/.gemini/scripts/archive_cleared_conversations.py';
+        const stopHooks = hooksJson.hooks.Stop || [];
+        const alreadyRegistered = stopHooks.some((h) => (h.command && h.command.includes('archive_cleared_conversations.py')) ||
+            (h.script && h.script.includes('archive_cleared_conversations.py')));
+        if (!alreadyRegistered) {
+            stopHooks.push({
+                type: 'command',
+                command: pythonCmd
+            });
+            hooksJson.hooks.Stop = stopHooks;
+            fs.writeFileSync(hooksPath, JSON.stringify(hooksJson, null, 2), 'utf8');
+        }
     }
     catch (e) {
-        console.warn('Failed to setup auto-archive hook:', e);
+        console.error('Failed to setup auto-archive hook:', e);
+    }
+}
+function checkAndAutoLoadPendingCascade() {
+    try {
+        const homeDir = os.homedir();
+        const pendingFile = path.join(homeDir, '.gemini', 'pending_workspace_cascade.json');
+        if (!fs.existsSync(pendingFile))
+            return;
+        const raw = fs.readFileSync(pendingFile, 'utf8');
+        const map = JSON.parse(raw);
+        const folders = vscode.workspace.workspaceFolders || [];
+        if (folders.length === 0)
+            return;
+        const norm = (u) => {
+            try {
+                return decodeURIComponent(u || '').toLowerCase().replace(/\\/g, '/').replace(/\/+$/, '');
+            }
+            catch {
+                return String(u || '').toLowerCase().replace(/\\/g, '/').replace(/\/+$/, '');
+            }
+        };
+        const currentUri = norm(folders[0].uri.toString());
+        const currentFsPath = norm(folders[0].uri.fsPath);
+        for (const [savedUri, cascadeId] of Object.entries(map)) {
+            const normSaved = norm(savedUri);
+            if ((normSaved === currentUri || normSaved === currentFsPath) && typeof cascadeId === 'string' && cascadeId) {
+                delete map[savedUri];
+                fs.writeFileSync(pendingFile, JSON.stringify(map, null, 2), 'utf8');
+                const focus = () => {
+                    vscode.commands.executeCommand('workbench.action.smartFocusConversation', cascadeId);
+                };
+                setTimeout(focus, 400);
+                setTimeout(focus, 1000);
+                setTimeout(focus, 2200);
+                break;
+            }
+        }
+    }
+    catch (e) {
+        console.error('Failed to auto-load pending cascade:', e);
     }
 }
 async function applyFix(silent = false) {
     const appRoot = vscode.env.appRoot;
     const wbPath = getWorkbenchPath(appRoot);
     const mainPath = getMainJsPath(appRoot);
+    const extPath = getAntigravityExtensionPath(appRoot);
     if (!fs.existsSync(wbPath)) {
         if (!silent) {
             vscode.window.showErrorMessage(`AGI Chat Fix: File not found: ${wbPath}`);
@@ -278,6 +308,13 @@ async function applyFix(silent = false) {
     if (fs.existsSync(mainPath) && !fs.existsSync(mainBakPath)) {
         try {
             fs.copyFileSync(mainPath, mainBakPath);
+        }
+        catch { }
+    }
+    const extBakPath = `${extPath}.bak`;
+    if (fs.existsSync(extPath) && !fs.existsSync(extBakPath)) {
+        try {
+            fs.copyFileSync(extPath, extBakPath);
         }
         catch { }
     }
@@ -324,6 +361,11 @@ async function applyFix(silent = false) {
         wbContent = wbContent.replace(ORIGINAL_IXU, PATCHED_IXU);
         wbModified = true;
     }
+    // Module 6: Register smartFocusConversation in workbench
+    if (wbContent.includes(ORIGINAL_SMART_FOCUS_TARGET) && !wbContent.includes('smartFocusConversation')) {
+        wbContent = wbContent.replace(ORIGINAL_SMART_FOCUS_TARGET, PATCHED_SMART_FOCUS_TARGET);
+        wbModified = true;
+    }
     if (wbModified) {
         try {
             fs.writeFileSync(wbPath, wbContent, 'utf8');
@@ -350,6 +392,31 @@ async function applyFix(silent = false) {
             console.warn('Failed to patch main.js:', e);
         }
     }
+    // Module 6: Auto-Select Option 2 and Auto-Load Chat in extension.js
+    if (fs.existsSync(extPath)) {
+        try {
+            let extContent = fs.readFileSync(extPath, 'utf8');
+            let extModified = false;
+            if (extContent.includes(ORIGINAL_QUICKPICK)) {
+                extContent = extContent.replace(ORIGINAL_QUICKPICK, PATCHED_QUICKPICK);
+                extModified = true;
+            }
+            if (extContent.includes(ORIGINAL_EXT_STORAGE)) {
+                extContent = extContent.replace(ORIGINAL_EXT_STORAGE, PATCHED_EXT_STORAGE);
+                extModified = true;
+            }
+            if (extContent.includes(ORIGINAL_EXT_ACT)) {
+                extContent = extContent.replace(ORIGINAL_EXT_ACT, PATCHED_EXT_ACT);
+                extModified = true;
+            }
+            if (extModified) {
+                fs.writeFileSync(extPath, extContent, 'utf8');
+            }
+        }
+        catch (e) {
+            console.warn('Failed to patch extension.js:', e);
+        }
+    }
     // Setup auto-archive hook
     setupAutoArchiveHook();
     // Sync product.json checksums
@@ -371,8 +438,10 @@ async function removeFix() {
     const appRoot = vscode.env.appRoot;
     const wbPath = getWorkbenchPath(appRoot);
     const mainPath = getMainJsPath(appRoot);
+    const extPath = getAntigravityExtensionPath(appRoot);
     const wbBakPath = `${wbPath}.bak`;
     const mainBakPath = `${mainPath}.bak`;
+    const extBakPath = `${extPath}.bak`;
     let restoredAny = false;
     if (fs.existsSync(wbBakPath)) {
         try {
@@ -393,6 +462,15 @@ async function removeFix() {
         }
         catch (e) {
             console.warn('Failed to restore main.js from backup:', e);
+        }
+    }
+    if (fs.existsSync(extBakPath) && fs.existsSync(extPath)) {
+        try {
+            fs.copyFileSync(extBakPath, extPath);
+            restoredAny = true;
+        }
+        catch (e) {
+            console.warn('Failed to restore extension.js from backup:', e);
         }
     }
     if (restoredAny) {
@@ -424,10 +502,18 @@ async function fixChecksumsOnly() {
 }
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('agi-chat-fix.apply', () => applyFix(false)), vscode.commands.registerCommand('agi-chat-fix.remove', () => removeFix()), vscode.commands.registerCommand('agi-chat-fix.fixChecksums', () => fixChecksumsOnly()), vscode.commands.registerCommand('antigravity-clipboard-fix.apply', () => applyFix(false)), vscode.commands.registerCommand('antigravity-clipboard-fix.remove', () => removeFix()), vscode.commands.registerCommand('antigravity-clipboard-fix.fixChecksums', () => fixChecksumsOnly()));
+    // Auto-load pending cascade on window activation or focus
+    checkAndAutoLoadPendingCascade();
+    context.subscriptions.push(vscode.window.onDidChangeWindowState(state => {
+        if (state.focused) {
+            checkAndAutoLoadPendingCascade();
+        }
+    }));
     // Auto-check on startup
     const appRoot = vscode.env.appRoot;
     const wbPath = getWorkbenchPath(appRoot);
     const mainPath = getMainJsPath(appRoot);
+    const extPath = getAntigravityExtensionPath(appRoot);
     if (fs.existsSync(wbPath)) {
         try {
             const wbContent = fs.readFileSync(wbPath, 'utf8');
@@ -438,9 +524,18 @@ function activate(context) {
             if (wbContent.includes(ORIGINAL_B5U) || wbContent.includes(ORIGINAL_FORK_FLAG)) {
                 needsPatch = true;
             }
+            if (wbContent.includes(ORIGINAL_SMART_FOCUS_TARGET) && !wbContent.includes('smartFocusConversation')) {
+                needsPatch = true;
+            }
             if (fs.existsSync(mainPath)) {
                 const mainContent = fs.readFileSync(mainPath, 'utf8');
                 if (mainContent.includes(ORIGINAL_NOTIF_PAYLOAD)) {
+                    needsPatch = true;
+                }
+            }
+            if (fs.existsSync(extPath)) {
+                const extContent = fs.readFileSync(extPath, 'utf8');
+                if (extContent.includes(ORIGINAL_QUICKPICK)) {
                     needsPatch = true;
                 }
             }

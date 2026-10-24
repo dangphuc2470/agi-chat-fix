@@ -21,7 +21,10 @@ All-in-one fix and enhancement suite for **Antigravity IDE**.
    - Configures automatic archiving of cleared conversations into `~/.gemini/conversations/`.
 6. **Multi-Window Notification Focus**:
    - Fixes issue where clicking a task-completed desktop notification opened the chat inside the currently active window instead of switching focus to the original window that ran the task.
-7. **Auto-Syncs Checksums & Auto-Prompts on IDE Updates**:
+7. **Auto-Load Cross-Workspace Chat & Zero Popup**:
+   - Eliminates the annoying *"Select where to open the conversation"* dialog when clicking conversations from different workspace folders.
+   - Automatically switches to/opens the target workspace window and auto-loads the selected conversation immediately.
+8. **Auto-Syncs Checksums & Auto-Prompts on IDE Updates**:
    - Recalculates and updates `product.json` checksums automatically, eliminating the *"Your installation appears to be corrupted"* warning.
    - When Google updates Antigravity IDE and overwrites files, the extension detects the missing patches on launch and offers a 1-click *"Apply All Fixes & Reload"* button.
 
