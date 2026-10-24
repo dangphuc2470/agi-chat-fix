@@ -1,26 +1,29 @@
 # AGI Chat Fix
 
-VS Code extension for **Antigravity IDE** that fixes copy/paste issues and restores the right-click context menu inside the AI chat panel.
+All-in-one fix and enhancement suite for **Antigravity IDE**.
 
 ---
 
-## The Problem
+## What This Extension Fixes & Enhances
 
-In Antigravity IDE, the AI chat panel intercepts keydown events to prevent shortcut conflicts with editor tabs. However, it fails to execute the clipboard action, leading to:
-- **Cmd+C / Ctrl+C does not copy**: Highlighted text in the chat panel cannot be copied using keyboard shortcuts.
-- **Cmd+V / Ctrl+V does not paste**: Pasting text into the chat input box often fails or gets swallowed.
-- **No right-click context menu**: Right-clicking on chat text does not show any context menu to copy.
-- **Integrity check warning**: Modifying core IDE files manually causes Antigravity to show *"Your installation appears to be corrupted"*.
-
----
-
-## What This Extension Does
-
-1. **Fixes Copy (`Cmd+C` / `Ctrl+C`)**: Reliable copying of highlighted text in AI responses, user messages, and code snippets.
-2. **Fixes Paste (`Cmd+V` / `Ctrl+V`)**: Smooth pasting into the chat prompt input from keyboard shortcuts and clipboard history.
-3. **Unlocks Right-Click Menu**: Restores full context menu (**Cut / Copy / Paste / Select All**) anywhere in the chat panel.
-4. **Auto-Syncs Checksums**: Recalculates and updates `product.json` checksums automatically, eliminating the *"corrupted installation"* warning.
-5. **Auto-Prompts on IDE Updates**: When Google updates Antigravity IDE and overwrites files, the extension detects the missing patch on launch and offers a 1-click *"Apply Fix & Reload"* button.
+1. **Clipboard & Selection (`Cmd+C` / `Ctrl+C`, `Cmd+V` / `Ctrl+V`)**:
+   - Reliable copying of highlighted text in AI responses, user messages, and code snippets.
+   - Smooth pasting into the chat prompt input from keyboard shortcuts and clipboard history.
+2. **Right-Click Context Menu**:
+   - Restores full context menu (**Cut / Copy / Paste / Select All**) anywhere in the chat panel.
+3. **Windows Workspace Chat History**:
+   - Fixes issue on Windows where recent chat history belonging to the current workspace folder would disappear or intermittently fail to show due to URL encoding differences (`%3A` vs `:`) and drive letter casing (`D:` vs `d:`).
+4. **Conversation Forking (Branch in New Chat)**:
+   - Unlocks the hidden conversation forking feature across the app.
+   - Adds a Git branch icon (`fork_left`) under **every response** so you can branch off into a new conversation from any checkpoint.
+5. **Full Context Archive & Link**:
+   - When a conversation reaches max context length and the server clears earlier turns, replaces the plain warning with an automatic archive notice plus a direct link to open the full conversation history as a clean Markdown (`.md`) file.
+   - Configures automatic archiving of cleared conversations into `~/.gemini/conversations/`.
+6. **Multi-Window Notification Focus**:
+   - Fixes issue where clicking a task-completed desktop notification opened the chat inside the currently active window instead of switching focus to the original window that ran the task.
+7. **Auto-Syncs Checksums & Auto-Prompts on IDE Updates**:
+   - Recalculates and updates `product.json` checksums automatically, eliminating the *"Your installation appears to be corrupted"* warning.
+   - When Google updates Antigravity IDE and overwrites files, the extension detects the missing patches on launch and offers a 1-click *"Apply All Fixes & Reload"* button.
 
 ---
 
@@ -35,12 +38,6 @@ In Antigravity IDE, the AI chat panel intercepts keydown events to prevent short
 5. Select **Install from VSIX...** and choose the downloaded `.vsix` file.
 6. When prompted, reload the window, or press `Cmd + Shift + P` -> **Developer: Reload Window**.
 
-### Method 2: Install via Terminal
-
-```bash
-"/Applications/Antigravity IDE.app/Contents/Resources/app/bin/antigravity-ide" --install-extension agi-chat-fix-1.0.0.vsix
-```
-
 ---
 
 ## Usage
@@ -51,9 +48,9 @@ You can also run commands manually by pressing `Cmd + Shift + P` (or `Ctrl + Shi
 
 | Command | Description |
 |---|---|
-| `AGI Chat Fix: Apply Patch & Fix Checksums` | Applies the clipboard and right-click patch and syncs checksums |
+| `AGI Chat Fix: Apply All Fixes & Sync Checksums` | Applies all patches and syncs checksums |
 | `AGI Chat Fix: Dismiss Corrupted Warning (Sync Checksums)` | Syncs checksums with `product.json` without modifying files |
-| `AGI Chat Fix: Remove Patch (Restore Original)` | Restores the original unmodified IDE files and original checksums |
+| `AGI Chat Fix: Remove All Fixes (Restore Original)` | Restores the original unmodified IDE files and original checksums |
 
 ---
 
