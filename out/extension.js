@@ -83,11 +83,13 @@ const PATCHED_NOTIF_PAYLOAD = 'payload:{cascadeId:t,type:"request_action",worksp
 const ORIGINAL_SMART_FOCUS_TARGET = 'sn.registerCommand("workbench.action.isAntigravitySnoozed",n=>i.isSnoozed())';
 const PATCHED_SMART_FOCUS_TARGET = 'sn.registerCommand("workbench.action.isAntigravitySnoozed",n=>i.isSnoozed()),sn.registerCommand("workbench.action.smartFocusConversation",(t,e)=>{try{t.get(AJ).togglePanelTab?.("conversation",e)}catch{}})';
 const ORIGINAL_QUICKPICK = 'l.commands.registerCommand("antigravity.openConversationWorkspaceQuickPick",async e=>{const t=e.workspaceUris,n=e.cascadeId;if(0===t.length)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});const o=[{label:"Open in current window",description:"Continue conversation in the current workspace"},...t.map(e=>({label:"Open in workspace: ",description:l.Uri.parse(e).fsPath}))],i=await l.window.showQuickPick(o,{placeHolder:"Select where to open the conversation",ignoreFocusOut:!1});if(!i||void 0===i.description)return(0,c.v)(d.Lm,{openInCurrentWindow:!1});if("Open in current window"===i.label)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});const r=i.description;try{const e=l.Uri.file(r);return await q.F.getInstance().setWorkspaceCascadeMap(e.toString(),n),await l.commands.executeCommand("vscode.openFolder",e,{forceNewWindow:!0}),(0,c.v)(d.Lm,{openInCurrentWindow:!1})}catch(e){return console.error("Error opening workspace:",e),l.window.showErrorMessage("Failed to open workspace"),(0,c.v)(d.Lm,{openInCurrentWindow:!1})}})';
-const PATCHED_QUICKPICK = 'l.commands.registerCommand("antigravity.openConversationWorkspaceQuickPick",async e=>{const t=e.workspaceUris,n=e.cascadeId;if(!t||0===t.length)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});try{const targetUri=l.Uri.parse(t[0]);await q.F.getInstance().setWorkspaceCascadeMap(targetUri.toString(),n);await l.commands.executeCommand("vscode.openFolder",targetUri,{forceNewWindow:!0});return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}catch(err){console.error("Error opening workspace:",err);return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}})';
+const AUTO_QUICKPICK = 'l.commands.registerCommand("antigravity.openConversationWorkspaceQuickPick",async e=>{const t=e.workspaceUris,n=e.cascadeId;if(!t||0===t.length)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});try{const targetUri=l.Uri.parse(t[0]);await q.F.getInstance().setWorkspaceCascadeMap(targetUri.toString(),n);await l.commands.executeCommand("vscode.openFolder",targetUri,{forceNewWindow:!0});return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}catch(err){console.error("Error opening workspace:",err);return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}})';
+const PATCHED_QUICKPICK = 'l.commands.registerCommand("antigravity.openConversationWorkspaceQuickPick",async e=>{const t=e.workspaceUris,n=e.cascadeId;if(!t||0===t.length)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});const o=[{label:"Open in current window",description:"Continue conversation in the current workspace",uri:null},...t.map(u=>{const p=l.Uri.parse(u);return{label:"Open in workspace: ",description:p.fsPath,uri:p}})];const i=await l.window.showQuickPick(o,{placeHolder:"Select where to open the conversation",ignoreFocusOut:!1});if(!i)return(0,c.v)(d.Lm,{openInCurrentWindow:!1});if("Open in current window"===i.label)return(0,c.v)(d.Lm,{openInCurrentWindow:!0});try{const targetUri=i.uri||l.Uri.file(i.description);await q.F.getInstance().setWorkspaceCascadeMap(targetUri.toString(),n);await l.commands.executeCommand("vscode.openFolder",targetUri,{forceNewWindow:!0});return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}catch(err){console.error("Error opening workspace:",err);l.window.showErrorMessage("Failed to open workspace");return(0,c.v)(d.Lm,{openInCurrentWindow:!1})}})';
 const ORIGINAL_EXT_STORAGE = 'getCascadeIdForCurrentWorkspace(){const e=this.getStoredValue(i.b.WORKSPACE_CASCADE_MAP),t=o.workspace.workspaceFolders?.[0]?.uri.toString();let n="";return void 0!==t&&void 0!==e&&(n=e[t]),n&&void 0!==t&&this.setWorkspaceCascadeMap(t,void 0),n}';
 const PATCHED_EXT_STORAGE = 'getCascadeIdForCurrentWorkspace(){const e=this.getStoredValue(i.b.WORKSPACE_CASCADE_MAP),t=o.workspace.workspaceFolders?.[0]?.uri.toString();let n="";if(void 0!==t&&void 0!==e){let _norm=u=>{try{return decodeURIComponent(u||"").toLowerCase().replace(/\\\\/g,"/").replace(/\\/+$/,"")}catch{return String(u||"").toLowerCase().replace(/\\\\/g,"/").replace(/\\/+$/,"")}};let _t=_norm(t);for(let[k,v]of Object.entries(e)){if(_norm(k)===_t){n=v;this.setWorkspaceCascadeMap(k,void 0);break}}}return n}';
 const ORIGINAL_EXT_ACT = 'q.F.initialize(e),ce.end()';
-const PATCHED_EXT_ACT = 'q.F.initialize(e),ce.end(),(()=>{try{const _pId=q.F.getInstance().getCascadeIdForCurrentWorkspace();if(_pId){const _f=()=>l.commands.executeCommand("workbench.action.smartFocusConversation",_pId);setTimeout(_f,800);setTimeout(_f,1800);setTimeout(_f,3000)}}catch(_e){}})()';
+const OLD_PATCHED_EXT_ACT = 'q.F.initialize(e),ce.end(),(()=>{try{const _pId=q.F.getInstance().getCascadeIdForCurrentWorkspace();if(_pId){const _f=()=>l.commands.executeCommand("workbench.action.smartFocusConversation",_pId);setTimeout(_f,800);setTimeout(_f,1800);setTimeout(_f,3000)}}catch(_e){}})()';
+const PATCHED_EXT_ACT = 'q.F.initialize(e),ce.end(),(()=>{try{const _check=()=>{try{const _pId=q.F.getInstance().getCascadeIdForCurrentWorkspace();if(_pId){const _f=()=>l.commands.executeCommand("workbench.action.smartFocusConversation",_pId);setTimeout(_f,300);setTimeout(_f,1000);setTimeout(_f,2500)}}catch(_e){}};_check();l.window.onDidChangeWindowState?.(ws=>{if(ws.focused)_check()})}catch(_e){}})()';
 function getWorkbenchPath(appRoot) {
     return path.join(appRoot, 'out', 'vs', 'workbench', 'workbench.desktop.main.js');
 }
@@ -400,7 +402,11 @@ async function applyFix(silent = false) {
         try {
             let extContent = fs.readFileSync(extPath, 'utf8');
             let extModified = false;
-            if (extContent.includes(ORIGINAL_QUICKPICK)) {
+            if (extContent.includes(AUTO_QUICKPICK)) {
+                extContent = extContent.replace(AUTO_QUICKPICK, PATCHED_QUICKPICK);
+                extModified = true;
+            }
+            else if (extContent.includes(ORIGINAL_QUICKPICK)) {
                 extContent = extContent.replace(ORIGINAL_QUICKPICK, PATCHED_QUICKPICK);
                 extModified = true;
             }
@@ -408,7 +414,11 @@ async function applyFix(silent = false) {
                 extContent = extContent.replace(ORIGINAL_EXT_STORAGE, PATCHED_EXT_STORAGE);
                 extModified = true;
             }
-            if (extContent.includes(ORIGINAL_EXT_ACT)) {
+            if (extContent.includes(OLD_PATCHED_EXT_ACT)) {
+                extContent = extContent.replace(OLD_PATCHED_EXT_ACT, PATCHED_EXT_ACT);
+                extModified = true;
+            }
+            else if (extContent.includes(ORIGINAL_EXT_ACT)) {
                 extContent = extContent.replace(ORIGINAL_EXT_ACT, PATCHED_EXT_ACT);
                 extModified = true;
             }
@@ -538,7 +548,7 @@ function activate(context) {
             }
             if (fs.existsSync(extPath)) {
                 const extContent = fs.readFileSync(extPath, 'utf8');
-                if (extContent.includes(ORIGINAL_QUICKPICK)) {
+                if (extContent.includes(ORIGINAL_QUICKPICK) || extContent.includes(AUTO_QUICKPICK) || extContent.includes(OLD_PATCHED_EXT_ACT)) {
                     needsPatch = true;
                 }
             }
