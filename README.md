@@ -19,17 +19,14 @@ All-in-one UX enhancement and bug-fix suite for **Antigravity IDE**.
 4. **Conversation Forking (Branch in New Chat)**:
    - Unlocks built-in conversation branching with a `fork_left` icon under every response to explore alternate prompts without losing context.
 
-5. **Full Context Auto-Archive**:
-   - Automatically archives conversations reaching context limits to `~/.gemini/conversations/` and adds a one-click Markdown link in the chat banner.
-
-6. **Multi-Window Notification Focus**:
+5. **Multi-Window Notification Focus**:
    - Directs task completion notifications to the exact window running the task, instead of opening duplicate chats in whichever window is currently active.
 
-7. **Cross-Workspace Chat Switch & QuickPick**:
+6. **Cross-Workspace Chat Switch & QuickPick**:
    - Preserves the QuickPick prompt (*"Open in current window"* vs *"Open in workspace"*).
    - When choosing to open in the other workspace, automatically switches to that workspace window and auto-loads the selected conversation immediately, even if that window was already open in the background.
 
-8. **Integrity & Auto-Patch Management**:
+7. **Integrity & Auto-Patch Management**:
    - Synchronizes `product.json` checksums to silence the *"Your installation appears to be corrupted"* warning.
    - Automatically detects unpatched files after IDE updates and offers a 1-click *"Apply All Fixes & Reload"*.
 

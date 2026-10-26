@@ -43,7 +43,7 @@ const ORIGINAL_FORK_BTN = 'i&&ue&&E(fxu,{steps:t})';
 const PATCHED_FORK_BTN = 'ue&&E(fxu,{steps:t})';
 
 // ==========================================
-// Module 4: Full Context Archive Link
+// Module 4: Legacy Archive Link Reverter
 // ==========================================
 const ORIGINAL_IXU = 'var ixu=({steps:t})=>txu(t)?E("div",{className:"flex items-center gap-2.5 p-4 my-2 bg-secondary/50 border border-border rounded-md",children:[E($e,{name:"info",size:16,className:"flex-shrink-0 text-secondary-foreground"}),E("p",{className:"text-sm",children:"The server cleared a prefix of the conversation as it grew too large."})]}):null';
 const PATCHED_IXU = 'var ixu=({steps:t})=>{if(!txu(t))return null;let _id=wC(),{workspaceInfo:{homeDirUri:_h}={},stepHandler:{openFile:_op}={}}=co(),_uri=(_h?_h+"/.gemini/conversations/":"file:///C:/Users/phucdnh/.gemini/conversations/")+_id+".md";return E("div",{className:"flex flex-col gap-2 p-3 my-2 bg-secondary/50 border border-border rounded-md",children:[E("div",{className:"flex items-center gap-2.5",children:[E($e,{name:"info",size:16,className:"flex-shrink-0 text-secondary-foreground"}),E("p",{className:"text-sm font-medium",children:"Hội thoại đã đầy ngữ cảnh và được tự động lưu trữ."})]}),E("div",{className:"flex items-center gap-1.5 text-xs text-primary cursor-pointer hover:underline pl-6",onClick:()=>{_op?.(_uri)},children:[E($e,{name:"description",size:14}),E("span",{children:"Bấm vào đây để mở toàn bộ lịch sử (.md)"})]})]})}';
@@ -110,122 +110,26 @@ function updateChecksumInProductJson(appRoot: string, fileRelativePath: string, 
     }
 }
 
-function setupAutoArchiveHook(): void {
-    const homeDir = os.homedir();
-    const geminiDir = path.join(homeDir, '.gemini');
-    const scriptsDir = path.join(geminiDir, 'scripts');
-    const configDir = path.join(geminiDir, 'config');
-    const convDir = path.join(geminiDir, 'conversations');
-
+function cleanAutoArchiveHook(): void {
     try {
-        fs.mkdirSync(scriptsDir, { recursive: true });
-        fs.mkdirSync(configDir, { recursive: true });
-        fs.mkdirSync(convDir, { recursive: true });
-
-        const scriptContent = `import json
-import os
-import sys
-
-def main():
-    try:
-        raw_input = sys.stdin.read()
-        if not raw_input.strip():
-            return
-        data = json.loads(raw_input)
-    except Exception:
-        return
-
-    conv_id = data.get("conversation_id")
-    if not conv_id:
-        return
-
-    user_home = os.path.expanduser("~")
-    gemini_dir = os.path.join(user_home, ".gemini")
-    logs_dir = os.path.join(gemini_dir, "antigravity-ide", "brain", conv_id, ".system_generated", "logs")
-    transcript_file = os.path.join(logs_dir, "transcript_full.jsonl")
-
-    if not os.path.exists(transcript_file):
-        transcript_file = os.path.join(logs_dir, "transcript.jsonl")
-        if not os.path.exists(transcript_file):
-            return
-
-    has_cleared_prefix = False
-    messages = []
-
-    try:
-        with open(transcript_file, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    entry = json.loads(line)
-                    text_content = json.dumps(entry, ensure_ascii=False)
-                    if "The server cleared a prefix of the conversation as it grew too large" in text_content:
-                        has_cleared_prefix = True
-
-                    step_type = entry.get("type")
-                    content = entry.get("content", "")
-                    if step_type == "USER_INPUT":
-                        messages.append(f"### User:\\n\\n{content}\\n")
-                    elif step_type == "PLANNER_RESPONSE":
-                        messages.append(f"### Assistant:\\n\\n{content}\\n")
-                except Exception:
-                    continue
-    except Exception:
-        return
-
-    if not has_cleared_prefix:
-        return
-
-    out_dir = os.path.join(gemini_dir, "conversations")
-    os.makedirs(out_dir, exist_ok=True)
-    out_file = os.path.join(out_dir, f"{conv_id}.md")
-
-    try:
-        with open(out_file, "w", encoding="utf-8") as out:
-            out.write(f"# Conversation Archive: {conv_id}\\n\\n")
-            out.write("> [!NOTE]\\n")
-            out.write("> This conversation prefix was cleared by the server as it grew too large.\\n")
-            out.write("> Full transcript preserved automatically by Antigravity Hook.\\n\\n---\\n\\n")
-            out.write("\\n---\\n\\n".join(messages))
-    except Exception:
-        pass
-
-if __name__ == "__main__":
-    main()
-`;
-        const scriptPath = path.join(scriptsDir, 'archive_cleared_conversations.py');
-        fs.writeFileSync(scriptPath, scriptContent, 'utf8');
-
-        const hooksPath = path.join(configDir, 'hooks.json');
-        let hooksJson: any = { hooks: {} };
+        const homeDir = os.homedir();
+        const hooksPath = path.join(homeDir, '.gemini', 'config', 'hooks.json');
         if (fs.existsSync(hooksPath)) {
-            try {
-                hooksJson = JSON.parse(fs.readFileSync(hooksPath, 'utf8'));
-                if (!hooksJson.hooks) hooksJson.hooks = {};
-            } catch {
-                hooksJson = { hooks: {} };
+            const hooksJson = JSON.parse(fs.readFileSync(hooksPath, 'utf8'));
+            if (hooksJson.hooks?.Stop) {
+                hooksJson.hooks.Stop = hooksJson.hooks.Stop.filter((h: any) =>
+                    !(h.command && h.command.includes('archive_cleared_conversations.py')) &&
+                    !(h.script && h.script.includes('archive_cleared_conversations.py'))
+                );
+                fs.writeFileSync(hooksPath, JSON.stringify(hooksJson, null, 2), 'utf8');
             }
         }
-
-        const pythonCmd = 'python ~/.gemini/scripts/archive_cleared_conversations.py';
-        const stopHooks: any[] = hooksJson.hooks.Stop || [];
-        const alreadyRegistered = stopHooks.some((h: any) =>
-            (h.command && h.command.includes('archive_cleared_conversations.py')) ||
-            (h.script && h.script.includes('archive_cleared_conversations.py'))
-        );
-
-        if (!alreadyRegistered) {
-            stopHooks.push({
-                type: 'command',
-                command: pythonCmd
-            });
-            hooksJson.hooks.Stop = stopHooks;
-            fs.writeFileSync(hooksPath, JSON.stringify(hooksJson, null, 2), 'utf8');
+        const scriptPath = path.join(homeDir, '.gemini', 'scripts', 'archive_cleared_conversations.py');
+        if (fs.existsSync(scriptPath)) {
+            fs.unlinkSync(scriptPath);
         }
     } catch (e) {
-        console.error('Failed to setup auto-archive hook:', e);
+        console.error('Failed to clean auto-archive hook:', e);
     }
 }
 
@@ -363,9 +267,9 @@ async function applyFix(silent: boolean = false): Promise<boolean> {
         wbModified = true;
     }
 
-    // Module 4: Full Context Archive Link
-    if (wbContent.includes(ORIGINAL_IXU)) {
-        wbContent = wbContent.replace(ORIGINAL_IXU, () => PATCHED_IXU);
+    // Module 4: Revert Archive Link if previously patched
+    if (wbContent.includes(PATCHED_IXU)) {
+        wbContent = wbContent.replace(PATCHED_IXU, () => ORIGINAL_IXU);
         wbModified = true;
     }
 
@@ -432,8 +336,8 @@ async function applyFix(silent: boolean = false): Promise<boolean> {
         }
     }
 
-    // Setup auto-archive hook
-    setupAutoArchiveHook();
+    // Ensure legacy auto-archive hook is removed
+    cleanAutoArchiveHook();
 
     // Sync product.json checksums
     const newBuf = Buffer.from(wbContent, 'utf8');
@@ -492,6 +396,8 @@ async function removeFix(): Promise<boolean> {
             console.warn('Failed to restore extension.js from backup:', e);
         }
     }
+
+    cleanAutoArchiveHook();
 
     if (restoredAny) {
         const choice = await vscode.window.showInformationMessage(
@@ -559,7 +465,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (wbContent.includes(BROKEN_V4_1_PATCHED_PSR) || wbContent.includes(BROKEN_V4_PATCHED_PSR) || wbContent.includes(V3_PATCHED_PSR) || wbContent.includes(V2_PATCHED_PSR) || wbContent.includes(V2_LEGACY_PATCHED_PSR) || wbContent.includes(V1_PATCHED_PSR) || (!wbContent.includes(PATCH_MARKER) && wbContent.includes(ORIGINAL_PSR))) {
                 needsPatch = true;
             }
-            if (wbContent.includes(ORIGINAL_B5U) || wbContent.includes(ORIGINAL_FORK_FLAG)) {
+            if (wbContent.includes(ORIGINAL_B5U) || wbContent.includes(ORIGINAL_FORK_FLAG) || wbContent.includes(PATCHED_IXU)) {
                 needsPatch = true;
             }
             if (wbContent.includes(ORIGINAL_SMART_FOCUS_TARGET) && !wbContent.includes('smartFocusConversation')) {
