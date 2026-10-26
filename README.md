@@ -22,9 +22,11 @@ All-in-one UX enhancement and bug-fix suite for **Antigravity IDE**.
 5. **Multi-Window Notification Focus**:
    - Directs task completion notifications to the exact window running the task, instead of opening duplicate chats in whichever window is currently active.
 
-6. **Cross-Workspace Chat Switch & QuickPick**:
-   - Preserves the QuickPick prompt (*"Open in current window"* vs *"Open in workspace"*).
-   - When choosing to open in the other workspace, automatically switches to that workspace window and auto-loads the selected conversation immediately, even if that window was already open in the background.
+6. **Zero-Popup Smart Cross-Workspace Navigation**:
+   - Automatically detects open windows and their active conversations in real-time.
+   - If the target workspace has no open window: automatically launches that workspace in a new window with the selected conversation.
+   - If the target workspace already has a window open with a different conversation: automatically opens the conversation in the current window to avoid disrupting the other workspace.
+   - If the target workspace already has this conversation open: immediately focuses that window.
 
 7. **Integrity & Auto-Patch Management**:
    - Synchronizes `product.json` checksums to silence the *"Your installation appears to be corrupted"* warning.
