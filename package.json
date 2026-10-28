@@ -2,7 +2,7 @@
   "name": "agi-chat-fix",
   "displayName": "AGI Chat Fix",
   "description": "All-in-one fix & UX enhancements for Antigravity IDE: clipboard, folder history, conversation forking, notification focus, and zero-popup smart cross-workspace navigation.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "dangphuc2470",
   "author": {
     "name": "dangphuc2470",
