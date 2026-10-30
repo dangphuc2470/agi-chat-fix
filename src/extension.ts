@@ -564,6 +564,9 @@ async function fixChecksumsOnly(): Promise<void> {
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
+        vscode.commands.registerCommand('antigravity-enhancer.apply', () => applyFix(false)),
+        vscode.commands.registerCommand('antigravity-enhancer.remove', () => removeFix()),
+        vscode.commands.registerCommand('antigravity-enhancer.fixChecksums', () => fixChecksumsOnly()),
         vscode.commands.registerCommand('agi-chat-fix.apply', () => applyFix(false)),
         vscode.commands.registerCommand('agi-chat-fix.remove', () => removeFix()),
         vscode.commands.registerCommand('agi-chat-fix.fixChecksums', () => fixChecksumsOnly()),

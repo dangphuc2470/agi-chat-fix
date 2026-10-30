@@ -1,7 +1,7 @@
 {
-  "name": "agi-chat-fix",
-  "displayName": "AGI Chat Fix",
-  "description": "All-in-one fix & UX enhancements for Antigravity IDE: clipboard, folder history, conversation forking, notification focus, and zero-popup smart cross-workspace navigation.",
+  "name": "antigravity-enhancer",
+  "displayName": "Antigravity Enhancer",
+  "description": "Essential UX enhancements and native workflow patches for Google Antigravity IDE: instant clipboard paste, seamless cross-workspace switching, conversation forking, and notification focus.",
   "version": "1.4.0",
   "publisher": "dangphuc2470",
   "author": {
@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dangphuc2470/agi-chat-fix.git"
+    "url": "https://github.com/dangphuc2470/antigravity-enhancer.git"
   },
   "engines": {
     "vscode": "^1.90.0"
@@ -26,19 +26,34 @@
   "contributes": {
     "commands": [
       {
+        "command": "antigravity-enhancer.apply",
+        "category": "Antigravity Enhancer",
+        "title": "Apply All Enhancements & Sync Checksums"
+      },
+      {
+        "command": "antigravity-enhancer.remove",
+        "category": "Antigravity Enhancer",
+        "title": "Remove All Enhancements (Restore Original)"
+      },
+      {
+        "command": "antigravity-enhancer.fixChecksums",
+        "category": "Antigravity Enhancer",
+        "title": "Dismiss Corrupted Warning (Sync Checksums)"
+      },
+      {
         "command": "agi-chat-fix.apply",
-        "category": "AGI Chat Fix",
-        "title": "Apply All Fixes & Sync Checksums"
+        "category": "Antigravity Enhancer",
+        "title": "Apply All Enhancements & Sync Checksums (Legacy Alias)"
       },
       {
         "command": "agi-chat-fix.remove",
-        "category": "AGI Chat Fix",
-        "title": "Remove All Fixes (Restore Original)"
+        "category": "Antigravity Enhancer",
+        "title": "Remove All Enhancements (Legacy Alias)"
       },
       {
         "command": "agi-chat-fix.fixChecksums",
-        "category": "AGI Chat Fix",
-        "title": "Dismiss Corrupted Warning (Sync Checksums)"
+        "category": "Antigravity Enhancer",
+        "title": "Dismiss Corrupted Warning (Legacy Alias)"
       }
     ]
   },

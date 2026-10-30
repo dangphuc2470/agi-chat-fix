@@ -569,7 +569,7 @@ async function fixChecksumsOnly() {
     }
 }
 function activate(context) {
-    context.subscriptions.push(vscode.commands.registerCommand('agi-chat-fix.apply', () => applyFix(false)), vscode.commands.registerCommand('agi-chat-fix.remove', () => removeFix()), vscode.commands.registerCommand('agi-chat-fix.fixChecksums', () => fixChecksumsOnly()), vscode.commands.registerCommand('antigravity-clipboard-fix.apply', () => applyFix(false)), vscode.commands.registerCommand('antigravity-clipboard-fix.remove', () => removeFix()), vscode.commands.registerCommand('antigravity-clipboard-fix.fixChecksums', () => fixChecksumsOnly()));
+    context.subscriptions.push(vscode.commands.registerCommand('antigravity-enhancer.apply', () => applyFix(false)), vscode.commands.registerCommand('antigravity-enhancer.remove', () => removeFix()), vscode.commands.registerCommand('antigravity-enhancer.fixChecksums', () => fixChecksumsOnly()), vscode.commands.registerCommand('agi-chat-fix.apply', () => applyFix(false)), vscode.commands.registerCommand('agi-chat-fix.remove', () => removeFix()), vscode.commands.registerCommand('agi-chat-fix.fixChecksums', () => fixChecksumsOnly()), vscode.commands.registerCommand('antigravity-clipboard-fix.apply', () => applyFix(false)), vscode.commands.registerCommand('antigravity-clipboard-fix.remove', () => removeFix()), vscode.commands.registerCommand('antigravity-clipboard-fix.fixChecksums', () => fixChecksumsOnly()));
     // Auto-load pending cascade on window activation or focus
     checkAndAutoLoadPendingCascade();
     context.subscriptions.push(vscode.window.onDidChangeWindowState(state => {

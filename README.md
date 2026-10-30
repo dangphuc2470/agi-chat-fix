@@ -1,63 +1,58 @@
-# AGI Chat Fix
+# Antigravity Enhancer
 
-All-in-one UX enhancement and bug-fix suite for **Antigravity IDE**.
+All-in-one UX and workflow enhancement suite for **Google Antigravity IDE**.
 
----
+Antigravity IDE is powerful, but daily development suffers from small papercuts: broken clipboard paste, annoying modal popups when opening past chats, missing right-click menus, missing recent project chats in history, and notifications focusing the wrong window. 
 
-## Key UX Fixes & Enhancements
-
-1. **Clipboard & Text Selection**:
-   - Fixes reliable copying (`Ctrl+C` / `Cmd+C`) from AI responses, user messages, and code blocks.
-   - Fixes keyboard pasting (`Ctrl+V` / `Cmd+V`) and system clipboard history directly into the prompt input.
-
-2. **Right-Click Context Menu**:
-   - Restores native context menu (**Cut**, **Copy**, **Paste**, **Select All**) across the agent chat panel.
-
-3. **Workspace Chat History (Windows)**:
-   - Resolves missing or intermittent conversation history caused by URI encoding (`%3A` vs `:`) and drive letter case mismatches (`D:` vs `d:`).
-
-4. **Conversation Forking (Branch in New Chat)**:
-   - Unlocks built-in conversation branching with a `fork_left` icon under every response to explore alternate prompts without losing context.
-
-5. **Multi-Window Notification Focus**:
-   - Directs task completion notifications to the exact window running the task, instead of opening duplicate chats in whichever window is currently active.
-
-6. **Zero-Popup Smart Cross-Workspace Navigation**:
-   - Automatically detects open windows and their active conversations in real-time.
-   - If the target workspace has no open window: automatically launches that workspace in a new window with the selected conversation.
-   - If the target workspace already has a window open with a different conversation: automatically opens the conversation in the current window to avoid disrupting the other workspace.
-   - If the target workspace already has this conversation open: immediately focuses that window.
-
-7. **Integrity & Auto-Patch Management**:
-   - Synchronizes `product.json` checksums to silence the *"Your installation appears to be corrupted"* warning.
-   - Automatically detects unpatched files after IDE updates and offers a 1-click *"Apply All Fixes & Reload"*.
+**Antigravity Enhancer** patches these friction points directly into the native IDE runtime with zero performance overhead.
 
 ---
 
-## Installation
+## Why You Need It
 
-### Install via Antigravity IDE (VSIX)
+### 1. Zero-Popup Cross-Workspace Navigation
+Clicking a past conversation from another workspace normally triggers a modal prompt asking where to open it. Antigravity Enhancer tracks active windows in real time and handles routing automatically:
+- If the workspace is already open: switches directly to that window and focuses the conversation.
+- If the workspace is closed: launches it in a fresh window with the requested conversation already loaded.
+- Never interrupts your active flow with repetitive confirmation dialogs.
 
-1. Download the latest `.vsix` from [Releases](https://github.com/dangphuc2470/agi-chat-fix/releases).
-2. Open Extensions (`Ctrl + Shift + X` or `Cmd + Shift + X`).
-3. Click More Actions (**`...`**) in the Extensions panel title bar.
-4. Select **Install from VSIX...** and pick the downloaded package.
-5. Reload window (`Ctrl + Shift + P` -> **Developer: Reload Window**).
+### 2. Native Clipboard & Selection
+- Restores instant keyboard pasting (`Ctrl+V` / `Cmd+V`) and system clipboard history directly into the agent input.
+- Restores full right-click context menu (**Cut**, **Copy**, **Paste**, **Select All**) across the entire chat interface.
+- Ensures reliable text selection and copying (`Ctrl+C` / `Cmd+C`) from code blocks and AI responses.
+
+### 3. Conversation Forking (Branch in New Chat)
+Unlocks built-in conversation branching under every response. Click the fork button to test alternative prompts or approaches from any point in the discussion without losing your original context.
+
+### 4. Workspace Recent Chat History (Windows Fix)
+On Windows, the recent conversation history dropdown often fails to list past chats belonging to the current project due to URI encoding discrepancies (`%3A` vs `:`) and drive letter casing mismatches (`C:` vs `c:`). Antigravity Enhancer normalizes workspace paths so your project's recent chats always appear in the history list for quick access.
+
+### 5. Multi-Window Notification Focus
+When background tasks finish, clicking the desktop notification normally opens a duplicate or mismatched chat in whichever window happens to be active. This patch attaches the originating workspace URI to the notification payload, ensuring clicks immediately focus the exact window and task where the work took place.
+
+---
+
+## Quick Start
+
+1. Download the latest `.vsix` from [GitHub Releases](https://github.com/dangphuc2470/antigravity-enhancer/releases).
+2. Open Extensions (`Ctrl + Shift + X` / `Cmd + Shift + X`) in Antigravity IDE.
+3. Click More Actions (**`...`**) in the top right of the panel -> **Install from VSIX...** -> select the downloaded file.
+4. Reload the window (`Ctrl + Shift + P` / `Cmd + Shift + P` -> **Developer: Reload Window**).
 
 ---
 
 ## Commands
 
-Access via Command Palette (`Ctrl + Shift + P` / `Cmd + Shift + P`) by searching **`agi`**:
+Search **`antigravity`** in the Command Palette (`Ctrl + Shift + P` / `Cmd + Shift + P`):
 
 | Command | Description |
 |---|---|
-| `AGI Chat Fix: Apply All Fixes & Sync Checksums` | Applies all patches and synchronizes checksums |
-| `AGI Chat Fix: Dismiss Corrupted Warning (Sync Checksums)` | Synchronizes checksums with `product.json` without modifying code |
-| `AGI Chat Fix: Remove All Fixes (Restore Original)` | Restores unmodified IDE files and original checksums |
+| `Antigravity Enhancer: Apply All Enhancements & Sync Checksums` | Applies all runtime patches and syncs checksums |
+| `Antigravity Enhancer: Dismiss Corrupted Warning (Sync Checksums)` | Updates `product.json` checksums without modifying code |
+| `Antigravity Enhancer: Remove All Enhancements (Restore Original)` | Restores pristine backup files and original checksums |
 
 ---
 
 ## License
 
-[MIT](LICENSE.txt) &copy; 2026 dangphuc2470
+[MIT](LICENSE.txt) (c) 2026 dangphuc2470
